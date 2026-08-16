@@ -71,9 +71,141 @@ header p {
   flex: 1.2;
   background: var(--bg-panel);
   border-radius: 16px;
-  padding: 28px;
+  padding: 24px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  position: relative;
 }
+
+/* Box Office Hub & Customer Queue */
+.box-office-hub {
+  background: rgba(22, 33, 62, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(8px);
+}
+
+.queue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.queue-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--accent-gold);
+}
+
+.queue-icon {
+  color: var(--accent-gold);
+}
+
+.queue-status-text {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.customer-queue-track {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 4px 10px 4px;
+  min-height: 24px;
+}
+
+.queue-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #f1c40f;
+  box-shadow: 0 0 6px rgba(241, 196, 15, 0.4);
+  transition: transform 0.25s ease, opacity 0.25s ease, background-color 0.25s ease;
+  flex-shrink: 0;
+}
+
+.queue-dot.served {
+  background: #3a3a54;
+  box-shadow: none;
+  opacity: 0.15;
+  transform: scale(0.65);
+}
+
+/* Counter Station Markers */
+.station-markers {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.counter-station {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(15, 15, 26, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.station-beacon {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.counter-station.station-1 { color: var(--counter-1); }
+.counter-station.station-1 .station-beacon { background: var(--counter-1); box-shadow: 0 0 5px var(--counter-1); }
+
+.counter-station.station-2 { color: var(--counter-2); }
+.counter-station.station-2 .station-beacon { background: var(--counter-2); box-shadow: 0 0 5px var(--counter-2); }
+
+.counter-station.station-3 { color: var(--counter-3); }
+.counter-station.station-3 .station-beacon { background: var(--counter-3); box-shadow: 0 0 5px var(--counter-3); }
+
+.counter-station.station-4 { color: var(--counter-4); }
+.counter-station.station-4 .station-beacon { background: var(--counter-4); box-shadow: 0 0 5px var(--counter-4); }
+
+.counter-station.station-flash {
+  transform: translateY(-2px) scale(1.04);
+}
+.counter-station.station-1.station-flash { box-shadow: 0 0 14px rgba(46, 196, 182, 0.6); background: rgba(46, 196, 182, 0.15); }
+.counter-station.station-2.station-flash { box-shadow: 0 0 14px rgba(232, 168, 56, 0.6); background: rgba(232, 168, 56, 0.15); }
+.counter-station.station-3.station-flash { box-shadow: 0 0 14px rgba(224, 87, 128, 0.6); background: rgba(224, 87, 128, 0.15); }
+.counter-station.station-4.station-flash { box-shadow: 0 0 14px rgba(118, 120, 237, 0.6); background: rgba(118, 120, 237, 0.15); }
+
+/* Flying Customer Dot */
+.flying-customer {
+  position: fixed;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  z-index: 10000;
+  pointer-events: none;
+  transition: transform 0.42s cubic-bezier(0.2, 0.9, 0.3, 1), opacity 0.42s ease, filter 0.42s ease;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+}
+
+.flying-customer.counter-1 { background: var(--counter-1); box-shadow: 0 0 12px var(--counter-1); }
+.flying-customer.counter-2 { background: var(--counter-2); box-shadow: 0 0 12px var(--counter-2); }
+.flying-customer.counter-3 { background: var(--counter-3); box-shadow: 0 0 12px var(--counter-3); }
+.flying-customer.counter-4 { background: var(--counter-4); box-shadow: 0 0 12px var(--counter-4); }
+.flying-customer.conflict-glow { background: var(--conflict); box-shadow: 0 0 14px var(--conflict); }
 
 .screen-bar {
   width: 90%;

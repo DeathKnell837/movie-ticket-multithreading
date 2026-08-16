@@ -189,6 +189,98 @@ function updateTimingChart() {
     }
 }
 
+function initCustomerQueue(count = 30) {
+    const track = document.getElementById('customer-queue');
+    if (!track) return;
+    track.innerHTML = '';
+    
+    // Clean up any lingering flying dots
+    document.querySelectorAll('.flying-customer').forEach(el => el.remove());
+
+    for (let i = 1; i <= count; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'queue-dot';
+        dot.id = `q-dot-${i}`;
+        dot.title = `Customer #${i}`;
+        track.appendChild(dot);
+    }
+    
+    const countEl = document.getElementById('queue-status-text');
+    if (countEl) countEl.innerText = `${count} in line`;
+}
+
+function animateCustomerJourney(row, col, counter, isConflict, onSeatArrival) {
+    const unservedDot = document.querySelector('#customer-queue .queue-dot:not(.served)');
+    const station = document.getElementById(`station-${counter}`);
+    const seatId = `${row}-${col}`;
+    const seatEl = seatElements[seatId];
+
+    if (unservedDot && station && seatEl) {
+        unservedDot.classList.add('served');
+
+        const remaining = document.querySelectorAll('#customer-queue .queue-dot:not(.served)').length;
+        const countEl = document.getElementById('queue-status-text');
+        if (countEl) {
+            countEl.innerText = remaining > 0 ? `${remaining} in line` : 'Queue empty';
+        }
+
+        const originRect = unservedDot.getBoundingClientRect();
+        const stationRect = station.getBoundingClientRect();
+        const seatRect = seatEl.getBoundingClientRect();
+
+        const flyer = document.createElement('div');
+        flyer.className = `flying-customer counter-${counter} ${isConflict ? 'conflict-glow' : ''}`;
+        flyer.style.left = `${originRect.left + (originRect.width / 2) - 6}px`;
+        flyer.style.top = `${originRect.top + (originRect.height / 2) - 6}px`;
+        flyer.style.transition = 'transform 0.24s cubic-bezier(0.2, 0.8, 0.4, 1), opacity 0.2s ease';
+        document.body.appendChild(flyer);
+
+        // Vector 1: Queue -> Counter Station
+        const dx1 = (stationRect.left + stationRect.width / 2) - (originRect.left + originRect.width / 2);
+        const dy1 = (stationRect.top + stationRect.height / 2) - (originRect.top + originRect.height / 2);
+
+        // Vector 2: Queue -> Target Seat (Total displacement from origin)
+        const dx2 = (seatRect.left + seatRect.width / 2) - (originRect.left + originRect.width / 2);
+        const dy2 = (seatRect.top + seatRect.height / 2) - (originRect.top + originRect.height / 2);
+
+        // Force browser reflow to ensure initial state applies
+        void flyer.offsetWidth;
+
+        // Phase 1: Slide from Queue to Counter
+        flyer.style.transform = `translate(${dx1}px, ${dy1}px)`;
+
+        // At end of Phase 1 (240ms): Hop at counter, then slide to target seat
+        setTimeout(() => {
+            station.classList.add('station-flash');
+            setTimeout(() => station.classList.remove('station-flash'), 180);
+
+            // Phase 2: Slide from Counter to Target Seat
+            flyer.style.transition = 'transform 0.32s cubic-bezier(0.25, 0.9, 0.35, 1), opacity 0.25s ease';
+            flyer.style.transform = `translate(${dx2}px, ${dy2}px)`;
+
+            // At end of Phase 2 (arrival on exact seat cell):
+            setTimeout(() => {
+                // Dissolve and shrink dot on the seat
+                flyer.style.transform = `translate(${dx2}px, ${dy2}px) scale(1.5)`;
+                flyer.style.opacity = '0';
+                setTimeout(() => {
+                    if (flyer.parentNode) flyer.parentNode.removeChild(flyer);
+                }, 200);
+
+                // Seat cell illuminates at the exact moment of landing!
+                if (onSeatArrival) onSeatArrival();
+            }, 320);
+        }, 240);
+    } else {
+        // Fallback
+        if (station) {
+            station.classList.add('station-flash');
+            setTimeout(() => station.classList.remove('station-flash'), 180);
+        }
+        if (onSeatArrival) onSeatArrival();
+    }
+}
+
 function startSimulation(mode) {
     if (isRunning) return;
     isRunning = true;
@@ -214,6 +306,7 @@ function startSimulation(mode) {
     }
     
     resetSeatMap();
+    initCustomerQueue(30);
     document.getElementById('event-log').innerHTML = '';
     document.getElementById('mode-badge').innerText = mode.toUpperCase().replace('_', ' ');
     
@@ -223,6 +316,7 @@ function startSimulation(mode) {
 function resetAll() {
     socket.emit('reset');
     resetSeatMap();
+    initCustomerQueue(30);
     document.getElementById('event-log').innerHTML = '';
     results = {};
     updateTimingChart();
@@ -240,6 +334,7 @@ function resetAll() {
 // Socket Events
 socket.on('simulation_started', (data) => {
     initSeatMap(data.rows || 5, data.cols || 8);
+    initCustomerQueue(data.num_customers || 30);
     document.getElementById('mode-badge').innerText = (data.mode || currentMode).toUpperCase().replace('_', ' ');
     addLogEntry(`Simulation started: ${data.mode}`, 'info');
 });
@@ -247,28 +342,31 @@ socket.on('simulation_started', (data) => {
 socket.on('seat_update', (data) => {
     if (data.reset) {
         resetSeatMap();
+        initCustomerQueue(30);
         return;
     }
     
-    updateSeat(data.row, data.col, data.counter, data.conflict);
-    
-    liveStats.sold++;
-    const seatKey = `${data.row}-${data.col}`;
-    if (!liveStats.soldSet.has(seatKey)) {
-        liveStats.soldSet.add(seatKey);
-        liveStats.uniqueSeats++;
-    }
-    if (data.counter >= 1 && data.counter <= 4) {
-        liveStats.counterCounts[data.counter]++;
-    }
-    
-    if (data.conflict) {
-        liveStats.conflicts++;
-        const rowChar = rowsAlphabet[data.row] || data.row;
-        showToast(`Conflict on Seat ${rowChar}${data.col+1}! Counters ${data.prev_counter} & ${data.counter} collided`, 'conflict');
-    }
-    
-    updateLiveStats();
+    animateCustomerJourney(data.row, data.col, data.counter, data.conflict, () => {
+        updateSeat(data.row, data.col, data.counter, data.conflict);
+        
+        liveStats.sold++;
+        const seatKey = `${data.row}-${data.col}`;
+        if (!liveStats.soldSet.has(seatKey)) {
+            liveStats.soldSet.add(seatKey);
+            liveStats.uniqueSeats++;
+        }
+        if (data.counter >= 1 && data.counter <= 4) {
+            liveStats.counterCounts[data.counter]++;
+        }
+        
+        if (data.conflict) {
+            liveStats.conflicts++;
+            const rowChar = rowsAlphabet[data.row] || data.row;
+            showToast(`Conflict on Seat ${rowChar}${data.col+1}! Counters ${data.prev_counter} & ${data.counter} collided`, 'conflict');
+        }
+        
+        updateLiveStats();
+    });
 });
 
 socket.on('log_entry', (data) => {
@@ -296,5 +394,6 @@ document.getElementById('btn-reset').addEventListener('click', resetAll);
 // Init
 window.addEventListener('DOMContentLoaded', () => {
     initSeatMap(5, 8);
+    initCustomerQueue(30);
     updateLiveStats();
 });
