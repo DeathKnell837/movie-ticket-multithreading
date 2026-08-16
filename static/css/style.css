@@ -6,8 +6,8 @@
   --accent-gold-dim: #b8960f;
   --counter-1: #2ec4b6;
   --counter-2: #e8a838;
-  --counter-3: #e05780;
-  --counter-4: #7678ed;
+  --counter-3: #a855f7;
+  --counter-4: #4361ee;
   --seat-empty: #2a2a3e;
   --seat-empty-hover: #3a3a5c;
   --conflict: #ff2e63;
@@ -196,8 +196,8 @@ header p {
 }
 .counter-station.station-1.station-flash { box-shadow: 0 0 14px rgba(46, 196, 182, 0.6); background: rgba(46, 196, 182, 0.15); }
 .counter-station.station-2.station-flash { box-shadow: 0 0 14px rgba(232, 168, 56, 0.6); background: rgba(232, 168, 56, 0.15); }
-.counter-station.station-3.station-flash { box-shadow: 0 0 14px rgba(224, 87, 128, 0.6); background: rgba(224, 87, 128, 0.15); }
-.counter-station.station-4.station-flash { box-shadow: 0 0 14px rgba(118, 120, 237, 0.6); background: rgba(118, 120, 237, 0.15); }
+.counter-station.station-3.station-flash { box-shadow: 0 0 14px rgba(168, 85, 247, 0.6); background: rgba(168, 85, 247, 0.15); }
+.counter-station.station-4.station-flash { box-shadow: 0 0 14px rgba(67, 97, 238, 0.6); background: rgba(67, 97, 238, 0.15); }
 
 /* FLYING CUSTOMER DOT */
 .flying-customer {
@@ -502,8 +502,8 @@ h3 {
 
 .c-badge.c1 { background: rgba(46, 196, 182, 0.2); color: var(--counter-1); border: 1px solid rgba(46, 196, 182, 0.3); }
 .c-badge.c2 { background: rgba(232, 168, 56, 0.2); color: var(--counter-2); border: 1px solid rgba(232, 168, 56, 0.3); }
-.c-badge.c3 { background: rgba(224, 87, 128, 0.2); color: var(--counter-3); border: 1px solid rgba(224, 87, 128, 0.3); }
-.c-badge.c4 { background: rgba(118, 120, 237, 0.2); color: var(--counter-4); border: 1px solid rgba(118, 120, 237, 0.3); }
+.c-badge.c3 { background: rgba(168, 85, 247, 0.2); color: var(--counter-3); border: 1px solid rgba(168, 85, 247, 0.3); }
+.c-badge.c4 { background: rgba(67, 97, 238, 0.2); color: var(--counter-4); border: 1px solid rgba(67, 97, 238, 0.3); }
 
 /* TIMING CHART */
 #timing-bars {
